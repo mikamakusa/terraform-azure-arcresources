@@ -1,0 +1,3 @@
+[submodule "modules/terraform-azure-storage"]
+	path = modules/terraform-azure-storage
+	url = git@github.com:mikamakusa/terraform-azure-storage.git
