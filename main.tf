@@ -5,7 +5,7 @@ resource "azurerm_arc_kubernetes_cluster" "this" {
   name                         = lookup(var.kubernetes_cluster[count.index], "name")
   resource_group_name          = data.azurerm_resource_group.this.name
   tags                         = merge(var.tags, lookup(var.kubernetes_cluster[count.index], "tags"))
-  
+
   identity {
     type = "SystemAssigned"
   }
@@ -53,10 +53,10 @@ resource "azurerm_arc_kubernetes_flux_configuration" "this" {
   dynamic "blob_storage" {
     for_each = try(lookup(var.kubernetes_flux_configuration[count.index], "blob_storage") == null ? [] : ["blob_storage"])
     content {
-      container_id             = ""
-      account_key              = ""
+      container_id             = try(element(module.storage.*.container_id, lookup(blob_storage.value, "container_id")))
+      account_key              = sensitive(lookup(blob_storage.value, "account_key"))
       local_auth_reference     = lookup(blob_storage.value, "local_auth_reference")
-      sas_token                = lookup(blob_storage.value, "sas_token")
+      sas_token                = sensitive(lookup(blob_storage.value, "sas_token"))
       sync_interval_in_seconds = lookup(blob_storage.value, "sync_interval_in_seconds")
       timeout_in_seconds       = lookup(blob_storage.value, "timeout_in_seconds")
 
@@ -77,9 +77,9 @@ resource "azurerm_arc_kubernetes_flux_configuration" "this" {
   dynamic "bucket" {
     for_each = try(lookup(var.kubernetes_flux_configuration[count.index], "bucket") == null ? [] : ["bucket"])
     content {
-      bucket_name              = ""
-      url                      = ""
-      access_key               = ""
+      bucket_name              = lookup(bucket.value, "bucket_name")
+      url                      = lookup(bucket.value, "url")
+      access_key               = sensitive(lookup(bucket.value, "access_key"))
       secret_key_base64        = filebase64(join("/", [path.cwd, "certificate", lookup(bucket.value, "secret_key_base64")]))
       local_auth_reference     = lookup(bucket.value, "local_auth_reference")
       sync_interval_in_seconds = lookup(bucket.value, "sync_interval_in_seconds")
